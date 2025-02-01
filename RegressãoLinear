@@ -1,0 +1,47 @@
+# Importar as bibliotecas necessárias
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+
+# Definir X (variáveis independentes) e y (variável dependente)
+X = df_final[['Temperatura', 'Pressao', 'Corrente', 'Vazao']]
+y = df_final['Viscosidade']
+
+# Dividir os dados em treino e teste (80% treino, 20% teste)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Instanciar o modelo de regressão linear
+model = LinearRegression()
+
+# Treinar o modelo com os dados de treino
+model.fit(X_train, y_train)
+
+# Fazer previsões com os dados de teste
+y_pred_rl = model.predict(X_test)
+
+# Plotar os valores reais vs valores preditos
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, y_pred_rl, alpha=0.5, label="Previsões Regressão Linear")
+plt.plot([min(y_test), max(y_test)], 
+         [min(y_test), max(y_test)], color='red', label="Valores Reais")
+plt.xlabel('Valores Reais (y_test)')
+plt.ylabel('Previsões (y_pred_xgb)')
+plt.title('Comparação entre Valores Reais e Previsões - Regressão Linear')
+plt.legend()
+plt.show()
+
+# Calcular o RMSE (Root Mean Squared Error)
+rmse = mean_squared_error(y_test, y_pred_rl, squared=False)
+
+# Calcular o R²
+r2 = r2_score(y_test, y_pred_rl)
+
+# Exibir os resultados
+print("Regressão Linear:")
+print("RMSE:", rmse)
+print("R²:", r2)
+
+# Exibir os coeficientes da regressão
+print("Coeficientes:", model.coef_)
+print("Intercepto:", model.intercept_)
