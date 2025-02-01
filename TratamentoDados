@@ -1,0 +1,102 @@
+# -*- coding: utf-8 -*-
+"""
+Tratamento de Dados com Seleção de Produto
+"""
+
+# Importação das bibliotecas necessárias
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Tentando carregar o arquivo Excel
+try:
+    # Ler os dados da planilha especificada
+    df = pd.read_excel('0.2 - Dados Originais Prontos.xlsx', sheet_name='Dados')
+    
+    # Verificar se o DataFrame foi carregado corretamente
+    print("DataFrame criado com sucesso.")
+    
+    # Exibir as primeiras 5 linhas do dataset
+    print(df.head())
+    
+    # Informações gerais sobre o dataset (colunas, tipos de dados, valores nulos, etc.)
+    print(df.info())
+
+except FileNotFoundError:
+    # Caso o arquivo não seja encontrado
+    print("O arquivo não foi encontrado. Verifique o caminho.")
+
+except Exception as e:
+    # Para tratar qualquer outro erro durante o carregamento
+    print(f"Ocorreu um erro: {e}")
+
+
+# Remover valores nulos (linhas com valores ausentes)
+df_clean = df.dropna()
+
+# Remover linhas em que todas as colunas têm valores iguais a zero
+df_clean = df_clean[(df_clean != 0).any(axis=1)]  
+
+# Filtrar o dataset com base nas condições especificadas pela equipe de produção
+df_filtered = df_clean[
+    (df_clean['Temperatura'] >= XX) & (df_clean['Temperatura'] <= XX) &  # Faixa de temperatura
+    (df_clean['Pressao'] >= XX) &                                        # Pressão mínima
+    (df_clean['Corrente'] >= XX) & (df_clean['Corrente'] <= XX) &        # Faixa de corrente
+    (df_clean['Vazao'] >= XX) & (df_clean['Vazao'] <= XX) &              # Faixa de vazão
+    (df_clean['Viscosidade'] >= XX) & (df_clean['Viscosidade'] <= XX)    # Faixa de viscosidade
+]
+# OBSERVAÇÃO OS VALORES DAS VARIÁVEIS FORAM SUBSTITUIDOS POR XX PARA PROTEÇÃO DOS DADOS
+
+# Filtrar para manter apenas os dados do produto com ID 20
+df_filtered = df_filtered[df_clean['Produto'] == 20]
+
+# Remover a coluna 'Produto' após o filtro, pois não é mais necessária
+df_filtered = df_filtered.drop(columns=['Produto'])
+
+# Criando o escalonador (MinMaxScaler) para normalizar os dados entre 0 e 1
+scaler = MinMaxScaler()
+
+# Aplicar o escalonamento para as variáveis filtradas
+df_filtered_scaled = pd.DataFrame(scaler.fit_transform(df_filtered), columns=df_filtered.columns)
+
+# Plotar histogramas com curva de densidade para cada variável escalonada
+# Temperatura
+sns.histplot(df_filtered_scaled['Temperatura'], kde=True, color='blue', label='Temperatura', stat="density", element="step")
+
+# Pressão
+sns.histplot(df_filtered_scaled['Pressao'], kde=True, color='red', label='Pressao', stat="density", element="step")
+
+# Corrente
+sns.histplot(df_filtered_scaled['Corrente'], kde=True, color='green', label='Corrente', stat="density", element="step")
+
+# Vazão
+sns.histplot(df_filtered_scaled['Vazao'], kde=True, color='purple', label='Vazao', stat="density", element="step")
+
+# Viscosidade
+sns.histplot(df_filtered_scaled['Viscosidade'], kde=True, color='orange', label='Viscosidade', stat="density", element="step")
+
+# Títulos e legendas para o gráfico
+plt.title('Distribuição de Variáveis - Produto 20')
+plt.xlabel('Valor Escalonado')
+plt.ylabel('Densidade')
+plt.legend()  # Adicionar legenda ao gráfico
+plt.grid(True)
+plt.show()  # Exibir os gráficos
+
+# Gerar a matriz de correlação para as variáveis escalonadas
+correlation_matrix = df_filtered_scaled.corr()
+
+# Exibir a matriz de correlação no console
+print(correlation_matrix)
+
+# Criar um heatmap (mapa de calor) para visualizar a matriz de correlação
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', linewidths=0.5)
+
+# Título do heatmap
+plt.title('Matriz de Correlação - Produto 20')
+plt.show()  # Exibir o heatmap
+
+# Dataset final processado e pronto para a análise
+df_final = df_filtered_scaled
